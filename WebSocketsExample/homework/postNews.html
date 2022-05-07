@@ -1,0 +1,125 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PostFrom</title>
+        <header>
+            <h1>
+                Форма отправки новостей 
+            </h1>
+        </header> 
+        <form 
+            id="addNews" 
+            method="post"
+            >
+            <input
+                placeholder="Введите новость!"
+                id="newsInputId"
+                >
+            <button
+                id="sendButtonId"
+                >
+                Отправить новость</button>
+        </form>
+    
+</head>
+<body>
+    
+</body>
+<script>
+
+    function postNews(url, data){
+        fetch(url,{
+            method: "POST", // POST, PUT, DELETE, etc.
+                headers: {
+                    // значение этого заголовка обычно ставится автоматически,
+                    // в зависимости от тела запроса
+                    "Access-Control-Allow-Origin": "http://127.0.0.1:8000", // http://stackoverflow.com/a/28353443/1148249
+                //    "Access-Control-Allow-Credentials": "true",
+                "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept",
+
+                    'Content-Type': 'application/json'
+                },
+
+                body: JSON.stringify(data), // string, FormData, Blob, BufferSource или URLSearchParams
+                referrer: "", // или "" для того, чтобы не послать заголовок Referer,
+                // или URL с текущего источника
+                referrerPolicy: "no-referrer", // no-referrer, origin, same-origin...
+                mode: "no-cors", // same-origin, no-cors
+                credentials: "same-origin", // omit, include
+                cache: "default", // no-store, reload, no-cache, force-cache или only-if-cached
+                redirect: "follow", // manual, error
+            //  integrity: "", // контрольная сумма, например "sha256-abcdef1234567890"
+                keepalive: false, // true
+                signal: undefined, // AbortController, чтобы прервать запрос
+                window: window // null
+            },)
+
+     //   .then(response => response.json())        // получаем ответ в виде промиса
+        .then(data => {
+            console.log('Завершена отправка новости:', data)
+              //  document.location.href = '';
+        })
+        .catch(error => console.error("Отправить новость не удалось!", error))
+
+    }
+
+
+
+    document.getElementById('sendButtonId').addEventListener("click", function(event) {
+        event.preventDefault();
+        newsValue = (document.getElementById('newsInputId').value)
+        console.log('newsValue', newsValue)
+        const url = 'http://localhost:8080/news'
+        postNews(url, 'Срочные новости: '+newsValue)
+
+        }
+    )
+
+
+
+// смотрел как тут сделать через ws. получается только возбудить метод get. потому не подходит.
+
+// webskts(`ws://localhost:8080/news`)
+// function webskts (wsUri2){
+// const wsUri = wsUri2
+// let websocket;
+
+
+// websocket = new WebSocket(wsUri);
+//     websocket.onopen = function(evt) {
+//         console.log("CONNECTED", evt);
+        
+//     };
+//     websocket.onclose = function(evt) {
+//         console.log("DISCONNECTED");
+
+//     };
+//     websocket.onmessage = function(evt) {
+
+//         let data = JSON.parse(evt.data);
+//         console.log('RESPONSE: ' + evt.data)
+//         if (evt.data){
+//         getMessages()
+//         }
+        
+//     };
+//     websocket.onerror = function(evt) {
+//         console.log(
+//         'ERROR:' + evt.data
+//         );
+//     };
+// }
+
+
+// document.getElementById('sendButtonId').addEventListener("click", function(event) {
+//     event.preventDefault();
+//     newsValue = (document.getElementById('newsInputId').value)
+//     const message = JSON.stringify(newsValue);
+//        websocket.send(message);
+//     }
+// )
+
+</script>
+</html>
