@@ -1,9 +1,7 @@
 import os
 import asyncio
-
 from aiohttp import web
 from asyncio import Queue
-import math, time
 
 WS_FILE  = os.path.join(os.path.dirname(__file__), 'websocket.html')
 
@@ -24,6 +22,14 @@ async def wshandler(request: web.Request):
             async for msg in resp:              #Далее мы начинаем перебирать сообщения, которые пришли от пользователя
                 if msg.type == web.WSMsgType.TEXT:  #Обратите внимание, что resp не содержит все сообщения, которые пользователь переслал, 
                     for ws in request.app["sockets"]:  #а передает их по одному через асинхронный вариант for цикла.
+                        if not ws.ping:
+                            inforString = 'Соединие с юзером утеряно'
+                            await ws.send_str(inforString)
+                            print(inforString)
+                        else:
+                            inforString = 'Соединие с юзером  подтверждено!'
+                            print(inforString)
+
                         if ws is not resp:              #То есть resp представляет собой итератор, который отдаёт сообщения по одному, когда они приходят.
                             await ws.send_str(msg.data)  # А когда их нет, то выполнение программы передаётся в Event Loop, который и следит за приходящими сообщениями.
                 else:
@@ -53,24 +59,14 @@ async def wshandler(request: web.Request):
             return web.Response(body="OK!!!", content_type="text/html")
         await resp.prepare(request)  
 
-# я не придумал как это потестить, т.к не могу придумать как разорвать соединие (если что браузер при крестике отсылает по ws что сокет закрывает), 
-# но это должно работать.
-async def conn_check(app: web.Application):
-    for ws in app["sockets"]:
-        testConnectopn = ws.ping
-        if not testConnectopn:
-            inforString = 'Соединие с юзером ' + ws + ' утеряно'
-            await ws.send_str(inforString)
-            print(inforString)
-        else:
-            await ws.send_str("Все сокеты на связи!")
-            print("Все сокеты на связи!")
 
-
-
-
-
-
+# async def conn_check(app: web.Application):
+#     for ws in app["sockets"]:
+#         testConnectopn = ws.ping
+#         if not testConnectopn:
+#             inforString = 'Соединие с юзером  утеряно'
+#             await ws.send_str(inforString)
+#             print(inforString)
 
 
 
@@ -79,17 +75,17 @@ async def on_shutdown(app: web.Application):  #По сути, мы здесь п
         await ws.close() 
 
 
+
 def init():
     app = web.Application()
     app["sockets"] = []
     app.router.add_post("/news", wshandler) # wshandler е   добавляет обработчик для запросов по пути "/news". 
     app.router.add_get("/news", wshandler)
-
-                                            #В нём же мы будем проверять: был это обычный GET-запросов, по которому #
-                                            # мы отдадим код страницы, или же запрос на websocket соединение.
     app.on_shutdown.append(on_shutdown) # on_shutdown
 
     return app
 
 
+
 web.run_app(init())
+
